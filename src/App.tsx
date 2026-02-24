@@ -14,7 +14,7 @@ export default function App() {
   const completed = useCompletedContracts();
   const [inventoryOpen, setInventoryOpen] = useState(false);
   const [highlightedMaterial, setHighlightedMaterial] = useState<string | null>(null);
-  const highlightTimer = useRef<ReturnType<typeof setTimeout>>();
+  const highlightTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const handleSelectMaterial = useCallback((materialId: string) => {
     if (highlightTimer.current) clearTimeout(highlightTimer.current);
