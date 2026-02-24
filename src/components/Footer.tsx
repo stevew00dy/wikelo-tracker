@@ -2,7 +2,7 @@ import { ExternalLink } from "lucide-react";
 
 const links = [
   { label: "Undisputed Noobs", href: "https://stevew00dy.github.io/undisputed-noobs/" },
-  { label: "Exec Hangar Tracker", href: "https://stevew00dy.github.io/cz-tracker/" },
+  { label: "Exec Hangar Tracker", href: "https://stevew00dy.github.io/exec-hangar-tracker/" },
 ];
 
 export function Footer() {
