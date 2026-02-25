@@ -4,6 +4,7 @@ import { FilterBar } from "./FilterBar";
 import type { FilterMode } from "./FilterBar";
 import { ContractCard } from "./ContractCard";
 import { contracts } from "../data/contracts";
+import { materials } from "../data/materials";
 import type { InventoryHook } from "../hooks/useInventory";
 import type { TrackedHook } from "../hooks/useTrackedContracts";
 import type { CompletedHook } from "../hooks/useCompletedContracts";
@@ -13,6 +14,18 @@ interface ContractsPanelProps {
   tracked: TrackedHook;
   completed: CompletedHook;
   onSelectMaterial: (materialId: string) => void;
+}
+
+const materialMap = new Map(materials.map((m) => [m.id, m.name]));
+
+function contractMatchesSearch(contract: typeof contracts[number], q: string): boolean {
+  return (
+    contract.name.toLowerCase().includes(q) ||
+    contract.reward.toLowerCase().includes(q) ||
+    contract.ingredients.some((ing) =>
+      (materialMap.get(ing.materialId) ?? "").toLowerCase().includes(q)
+    )
+  );
 }
 
 export function ContractsPanel({ inventory, tracked, completed, onSelectMaterial }: ContractsPanelProps) {
@@ -44,11 +57,7 @@ export function ContractsPanel({ inventory, tracked, completed, onSelectMaterial
 
   const counts: Record<FilterMode, number> = useMemo(() => {
     const searchFiltered = search
-      ? enriched.filter(
-          (e) =>
-            e.contract.name.toLowerCase().includes(search.toLowerCase()) ||
-            e.contract.reward.toLowerCase().includes(search.toLowerCase())
-        )
+      ? enriched.filter((e) => contractMatchesSearch(e.contract, search.toLowerCase()))
       : enriched;
     return {
       all: searchFiltered.length,
@@ -63,11 +72,7 @@ export function ContractsPanel({ inventory, tracked, completed, onSelectMaterial
 
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(
-        (e) =>
-          e.contract.name.toLowerCase().includes(q) ||
-          e.contract.reward.toLowerCase().includes(q)
-      );
+      result = result.filter((e) => contractMatchesSearch(e.contract, q));
     }
 
     switch (filter) {
@@ -105,7 +110,7 @@ export function ContractsPanel({ inventory, tracked, completed, onSelectMaterial
           <SearchBar
             value={search}
             onChange={setSearch}
-            placeholder="Search contracts or rewards..."
+            placeholder="Search contracts, rewards or ingredients..."
           />
         </div>
       </div>
