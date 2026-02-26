@@ -38,6 +38,7 @@ export const materials: Material[] = [
   { id: "wikelo-favor", name: "Wikelo Favor", category: "currency" },
   { id: "mg-scrip", name: "MG Scrip", category: "currency" },
   { id: "polaris-bit", name: "Polaris Bit", category: "currency" },
+  { id: "council-scrip", name: "Council Scrip", category: "currency" },
 
   // Ores & Minerals
   { id: "quantainium", name: "Quantainium", category: "ores" },
@@ -48,6 +49,7 @@ export const materials: Material[] = [
   { id: "copper", name: "Copper", category: "ores" },
   { id: "tungsten", name: "Tungsten", category: "ores" },
   { id: "corundum", name: "Corundum", category: "ores" },
+  { id: "bluemoon-fungus", name: "Bluemoon Fungus", category: "ores" },
 
   // Creature Drops
   { id: "valakkar-pearl-aaa", name: "Irradiated Valakkar Pearl (AAA)", category: "creature" },
@@ -87,6 +89,7 @@ export const materials: Material[] = [
   { id: "zenith-sniper", name: "Zenith Sniper Rifle", category: "weapons" },
   { id: "fresnel-lmg", name: "Fresnel Energy LMG", category: "weapons" },
   { id: "fresnel-deepwater", name: "Fresnel 'Deepwater' Energy LMG", category: "weapons" },
+  { id: "tripledown-pistol", name: "Tripledown Pistol", category: "weapons" },
 
   // Armor & Gear
   { id: "argo-atls", name: "Argo ATLS", category: "armor" },
@@ -123,6 +126,11 @@ export const materials: Material[] = [
   { id: "testudo-arms", name: "Testudo Turfwar Arms", category: "armor" },
   { id: "testudo-legs", name: "Testudo Turfwar Legs", category: "armor" },
   { id: "testudo-backpack", name: "Testudo Turfwar Backpack", category: "armor" },
+  { id: "strata-helmet", name: "Strata Helmet", category: "armor" },
+  { id: "strata-core", name: "Strata Core", category: "armor" },
+  { id: "strata-arms", name: "Strata Arms", category: "armor" },
+  { id: "strata-legs", name: "Strata Legs", category: "armor" },
+  { id: "strata-backpack", name: "Strata Backpack", category: "armor" },
 ];
 
 export const materialMap = new Map(materials.map((m) => [m.id, m]));

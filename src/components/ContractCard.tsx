@@ -1,5 +1,5 @@
-import { Star, CheckCircle, Undo2, Hammer } from "lucide-react";
-import type { Contract } from "../data/contracts";
+import { Star, CheckCircle, Undo2, Hammer, Shield, Swords, Rocket, Truck, ArrowRightLeft } from "lucide-react";
+import type { Contract, ContractCategory } from "../data/contracts";
 import { materialMap } from "../data/materials";
 import type { InventoryHook } from "../hooks/useInventory";
 
@@ -13,6 +13,14 @@ interface ContractCardProps {
   onUncomplete: () => void;
   onSelectMaterial: (materialId: string) => void;
 }
+
+const categoryConfig: Record<ContractCategory, { icon: typeof Shield; color: string; label: string }> = {
+  armor: { icon: Shield, color: "text-accent-purple bg-accent-purple/15", label: "Armor" },
+  weapon: { icon: Swords, color: "text-accent-red bg-accent-red/15", label: "Weapon" },
+  ship: { icon: Rocket, color: "text-accent-blue bg-accent-blue/15", label: "Ship" },
+  vehicle: { icon: Truck, color: "text-accent-amber bg-accent-amber/15", label: "Vehicle" },
+  currency: { icon: ArrowRightLeft, color: "text-accent-green bg-accent-green/15", label: "Exchange" },
+};
 
 function StatusDot({ owned, needed }: { owned: number; needed: number }) {
   const color = owned >= needed ? "bg-accent-green" : owned > 0 ? "bg-accent-amber" : "bg-accent-red";
@@ -39,6 +47,9 @@ export function ContractCard({
   const progress = totalIngredients > 0 ? completedIngredients / totalIngredients : 0;
   const isCraftable = progress === 1 && !isCompleted;
 
+  const cat = categoryConfig[contract.category];
+  const CatIcon = cat.icon;
+
   return (
     <div
       className={`card p-4 transition-all duration-300 ${
@@ -51,14 +62,18 @@ export function ContractCard({
               : "hover:border-dark-600"
       }`}
     >
-      <div className="flex items-start justify-between gap-2 mb-3">
+      <div className="flex items-start justify-between gap-2 mb-2">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-semibold break-words">{contract.name}</h3>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider ${cat.color}`}>
+              <CatIcon className="w-2.5 h-2.5" />
+              {cat.label}
+            </span>
             {isCompleted && (
               <CheckCircle className="w-4 h-4 text-accent-green shrink-0" />
             )}
           </div>
+          <h3 className="text-sm font-semibold break-words mt-1">{contract.name}</h3>
           <p className="text-xs text-accent-purple break-words">{contract.reward}</p>
         </div>
         <button
@@ -72,6 +87,20 @@ export function ContractCard({
         >
           <Star className={`w-4 h-4 ${isTracked ? "fill-current" : ""}`} />
         </button>
+      </div>
+
+      {/* Rep info */}
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        {contract.reputationReward > 0 && (
+          <span className="text-[10px] font-mono font-semibold text-accent-green bg-accent-green/10 px-1.5 py-0.5 rounded">
+            +{contract.reputationReward} XP
+          </span>
+        )}
+        {contract.reputationRequired > 0 && (
+          <span className="text-[10px] font-mono font-semibold text-accent-amber bg-accent-amber/10 px-1.5 py-0.5 rounded">
+            Requires {contract.reputationRequired} rep
+          </span>
+        )}
       </div>
 
       {/* Progress bar */}

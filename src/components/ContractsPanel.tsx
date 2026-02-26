@@ -4,6 +4,7 @@ import { FilterBar } from "./FilterBar";
 import type { FilterMode } from "./FilterBar";
 import { ContractCard } from "./ContractCard";
 import { contracts } from "../data/contracts";
+import type { ContractCategory } from "../data/contracts";
 import { materials } from "../data/materials";
 import type { InventoryHook } from "../hooks/useInventory";
 import type { TrackedHook } from "../hooks/useTrackedContracts";
@@ -16,14 +17,15 @@ interface ContractsPanelProps {
   onSelectMaterial: (materialId: string) => void;
 }
 
-const materialMap = new Map(materials.map((m) => [m.id, m.name]));
+const materialNameMap = new Map(materials.map((m) => [m.id, m.name]));
 
 function contractMatchesSearch(contract: typeof contracts[number], q: string): boolean {
   return (
     contract.name.toLowerCase().includes(q) ||
     contract.reward.toLowerCase().includes(q) ||
+    contract.category.toLowerCase().includes(q) ||
     contract.ingredients.some((ing) =>
-      (materialMap.get(ing.materialId) ?? "").toLowerCase().includes(q)
+      (materialNameMap.get(ing.materialId) ?? "").toLowerCase().includes(q)
     )
   );
 }
@@ -31,6 +33,7 @@ function contractMatchesSearch(contract: typeof contracts[number], q: string): b
 export function ContractsPanel({ inventory, tracked, completed, onSelectMaterial }: ContractsPanelProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterMode>("all");
+  const [category, setCategory] = useState<ContractCategory | "all">("all");
 
   const enriched = useMemo(
     () =>
@@ -55,26 +58,47 @@ export function ContractsPanel({ inventory, tracked, completed, onSelectMaterial
     [inventory, tracked, completed]
   );
 
-  const counts: Record<FilterMode, number> = useMemo(() => {
-    const searchFiltered = search
-      ? enriched.filter((e) => contractMatchesSearch(e.contract, search.toLowerCase()))
-      : enriched;
-    return {
-      all: searchFiltered.length,
-      craftable: searchFiltered.filter((e) => e.isCraftable).length,
-      "in-progress": searchFiltered.filter((e) => e.isInProgress).length,
-      tracked: searchFiltered.filter((e) => e.isTracked).length,
-    };
-  }, [enriched, search]);
-
-  const filtered = useMemo(() => {
+  const baseFiltered = useMemo(() => {
     let result = enriched;
-
+    if (category !== "all") {
+      result = result.filter((e) => e.contract.category === category);
+    }
     if (search) {
       const q = search.toLowerCase();
       result = result.filter((e) => contractMatchesSearch(e.contract, q));
     }
+    return result;
+  }, [enriched, search, category]);
 
+  const counts: Record<FilterMode, number> = useMemo(() => ({
+    all: baseFiltered.length,
+    craftable: baseFiltered.filter((e) => e.isCraftable).length,
+    "in-progress": baseFiltered.filter((e) => e.isInProgress).length,
+    tracked: baseFiltered.filter((e) => e.isTracked).length,
+  }), [baseFiltered]);
+
+  const categoryCounts = useMemo(() => {
+    let pool = enriched;
+    if (search) {
+      const q = search.toLowerCase();
+      pool = pool.filter((e) => contractMatchesSearch(e.contract, q));
+    }
+    const result: Record<ContractCategory | "all", number> = {
+      all: pool.length,
+      armor: 0,
+      weapon: 0,
+      ship: 0,
+      vehicle: 0,
+      currency: 0,
+    };
+    for (const e of pool) {
+      result[e.contract.category]++;
+    }
+    return result;
+  }, [enriched, search]);
+
+  const filtered = useMemo(() => {
+    let result = baseFiltered;
     switch (filter) {
       case "craftable":
         result = result.filter((e) => e.isCraftable);
@@ -93,7 +117,7 @@ export function ContractsPanel({ inventory, tracked, completed, onSelectMaterial
       if (a.isCraftable !== b.isCraftable) return a.isCraftable ? -1 : 1;
       return b.progress - a.progress;
     });
-  }, [enriched, search, filter]);
+  }, [baseFiltered, filter]);
 
   const handleCraft = (contractId: string) => {
     const contract = contracts.find((c) => c.id === contractId);
@@ -105,7 +129,14 @@ export function ContractsPanel({ inventory, tracked, completed, onSelectMaterial
   return (
     <div className="flex-1 min-w-0">
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <FilterBar active={filter} onChange={setFilter} counts={counts} />
+        <FilterBar
+          active={filter}
+          onChange={setFilter}
+          counts={counts}
+          activeCategory={category}
+          onCategoryChange={setCategory}
+          categoryCounts={categoryCounts}
+        />
         <div className="sm:w-64">
           <SearchBar
             value={search}
