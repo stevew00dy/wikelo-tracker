@@ -1,4 +1,4 @@
-import { Settings, Package, Download, Upload, RotateCcw, X } from "lucide-react";
+import { Settings, Package, Download, Upload, RotateCcw, X, Home, Menu } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 interface HeaderProps {
@@ -45,21 +45,26 @@ function importData(file: File) {
 export function Header({ completedCount, craftableCount, totalCount, onReset }: HeaderProps) {
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const pct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   useEffect(() => {
-    if (!open) return;
+    if (!open && !navOpen) return;
     function handleClick(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      if (open && panelRef.current && !panelRef.current.contains(e.target as Node)) {
         setOpen(false);
         setConfirming(false);
+      }
+      if (navOpen && navRef.current && !navRef.current.contains(e.target as Node)) {
+        setNavOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [open]);
+  }, [open, navOpen]);
 
   return (
     <header className="border-b border-dark-700 bg-dark-900/80 backdrop-blur-sm sticky top-0 z-50">
@@ -103,7 +108,7 @@ export function Header({ completedCount, craftableCount, totalCount, onReset }: 
           {/* Settings cog */}
           <div className="relative" ref={panelRef}>
             <button
-              onClick={() => { setOpen(!open); setConfirming(false); }}
+              onClick={() => { setOpen(!open); setConfirming(false); setNavOpen(false); }}
               className={`p-2 rounded-lg transition-all duration-200 ${
                 open
                   ? "text-text bg-dark-700"
@@ -190,6 +195,36 @@ export function Header({ completedCount, craftableCount, totalCount, onReset }: 
                     </button>
                   )}
                 </div>
+              </div>
+            )}
+          </div>
+
+          <div className="relative" ref={navRef}>
+            <button
+              onClick={() => { setNavOpen(!navOpen); setOpen(false); setConfirming(false); }}
+              className={`p-2 rounded-lg transition-all duration-200 ${
+                navOpen ? "text-text bg-dark-700" : "text-text-muted hover:text-text hover:bg-dark-800"
+              }`}
+              title="Menu"
+            >
+              <Menu className="w-4 h-4" />
+            </button>
+            {navOpen && (
+              <div className="absolute right-0 top-full mt-2 w-56 p-2 shadow-xl z-50 rounded-xl border border-dark-700 bg-dark-900">
+                <a href="/" className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs text-text-dim hover:text-text hover:bg-dark-700 transition-all duration-200">
+                  <Home className="w-3.5 h-3.5 text-accent-amber" />
+                  undisputed noobs
+                </a>
+                <div className="border-t border-dark-700 my-1.5" />
+                <a href="/armor-tracker/" className="block px-3 py-2 rounded-lg text-xs text-text-dim hover:text-text hover:bg-dark-700 transition-all duration-200">Armour Tracker</a>
+                <a href="/exec-hangar-tracker/" className="block px-3 py-2 rounded-lg text-xs text-text-dim hover:text-text hover:bg-dark-700 transition-all duration-200">Exec Hangar Tracker</a>
+                <a href="/wikelo-tracker/" className="block px-3 py-2 rounded-lg text-xs text-accent-amber font-medium">Wikelo Tracker</a>
+                <a href="/loadout-planner/" className="block px-3 py-2 rounded-lg text-xs text-text-dim hover:text-text hover:bg-dark-700 transition-all duration-200">Loadout Planner</a>
+                <div className="border-t border-dark-700 my-1.5" />
+                <a href="https://robertsspaceindustries.com/enlist?referral=STAR-23GB-5J3N" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-accent-blue hover:bg-dark-700 transition-all duration-200">
+                  Play Star Citizen
+                  <span className="text-[10px] text-text-muted">↗</span>
+                </a>
               </div>
             )}
           </div>
